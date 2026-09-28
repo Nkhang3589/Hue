@@ -54,9 +54,7 @@ const playSound = (type) => {
 const ALL_TOPPINGS = ['tai', 'nam', 'gan', 'gio', 'cha', 'huyet', 'xuong'];
 const INITIAL_MENU = [
   { id: 'bun_bo', name: 'Bún Bò Huế', price: 40000, cost: 16000, stock: 12, img: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=300&auto=format&fit=crop&q=80', prepTime: 2, sizes: ['Tô nhỏ', 'Tô lớn'], toppings: ALL_TOPPINGS },
-  { id: 'bun_bo_tron', name: 'Bún Bò Trộn (Khô)', price: 42000, cost: 17000, stock: 8, img: 'https://images.unsplash.com/photo-1555126634-323283e090fa?w=300&auto=format&fit=crop&q=80', prepTime: 2, sizes: ['Tô nhỏ', 'Tô lớn'], toppings: ALL_TOPPINGS },
-  { id: 'xao_bo', name: 'Xáo Bò', price: 45000, cost: 19000, stock: 8, img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=300&auto=format&fit=crop&q=80', prepTime: 3, sizes: ['Đĩa nhỏ', 'Đĩa lớn'], toppings: ['tai', 'nam', 'gan', 'huyet'] },
-  { id: 'banh_mi', name: 'Bánh Mì Chấm Nước Lèo', price: 15000, cost: 5000, stock: 15, img: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=300&auto=format&fit=crop&q=80', prepTime: 1, sizes: ['Ổ nhỏ', 'Ổ lớn'], toppings: ['gio', 'cha'] },
+  { id: 'xao_bo', name: 'Xáo Bò', price: 45000, cost: 19000, stock: 8, img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=300&auto=format&fit=crop&q=80', prepTime: 3, sizes: ['Đĩa nhỏ', 'Đĩa lớn'], toppings: ['tai', 'nam', 'gan', 'huyet', 'banh_mi'] },
 ];
 
 const CUSTOMER_AVATARS = [
@@ -68,14 +66,28 @@ const CUSTOMER_AVATARS = [
 ];
 
 const TOPPINGS = [
-  { id: 'tai', name: 'Tái', price: 10000 },
-  { id: 'nam', name: 'Nạm', price: 10000 },
-  { id: 'gan', name: 'Gân', price: 8000 },
-  { id: 'gio', name: 'Giò heo', price: 8000 },
-  { id: 'cha', name: 'Chả', price: 6000 },
-  { id: 'huyet', name: 'Huyết', price: 5000 },
-  { id: 'xuong', name: 'Xương ống', price: 12000 },
+  { id: 'tai', name: 'Tái', price: 10000, emoji: '🥩' },
+  { id: 'nam', name: 'Nạm', price: 10000, emoji: '🍖' },
+  { id: 'gan', name: 'Gân', price: 8000, emoji: '🍢' },
+  { id: 'gio', name: 'Giò heo', price: 8000, emoji: '🍗' },
+  { id: 'cha', name: 'Chả', price: 6000, emoji: '🍥' },
+  { id: 'huyet', name: 'Huyết', price: 5000, emoji: '🟥' },
+  { id: 'xuong', name: 'Xương ống', price: 12000, emoji: '🦴' },
+  { id: 'banh_mi', name: 'Bánh mì', price: 5000, emoji: '🥖' }, // ăn kèm xáo bò
 ];
+const DRINKS = [
+  { id: 'tra_da', name: 'Trà đá', price: 3000, cost: 1000, emoji: '🧊', stock: 20 },
+  { id: 'coca', name: 'Coca', price: 12000, cost: 8000, emoji: '🥤', stock: 10 },
+  { id: '7up', name: '7Up', price: 12000, cost: 8000, emoji: '🍋', stock: 10 },
+  { id: 'mirinda', name: 'Mirinda', price: 12000, cost: 8000, emoji: '🍊', stock: 10 },
+  { id: 'nuoc_suoi', name: 'Nước suối', price: 8000, cost: 4000, emoji: '💧', stock: 10 },
+  { id: 'bo_huc', name: 'Bò húc', price: 15000, cost: 10000, emoji: '🐂', stock: 10 },
+  { id: 'sting_vang', name: 'Sting vàng', price: 12000, cost: 8000, emoji: '⚡', stock: 10 },
+  { id: 'sting_dau', name: 'Sting dâu', price: 12000, cost: 8000, emoji: '🍓', stock: 10 },
+];
+const INITIAL_DRINK_STOCK = Object.fromEntries(DRINKS.map(d => [d.id, d.stock]));
+const drinkById = (id) => DRINKS.find(d => d.id === id);
+const MOD_EMOJI = { rau: '🥬', hanh: '🧅', ot: '🌶️' };
 const MODS = [['rau', 'rau'], ['hanh', 'hành'], ['ot', 'ớt']];
 const SIZE_EXTRA = 7000;
 const DAY_LENGTH = 240;
@@ -86,22 +98,23 @@ const UTILITIES = 20000;
 const WAGE_WAITER = 30000;
 const WAGE_CHEF = 50000;
 const EMPTY_STATS = { purchases: 0, rent: 0, utilities: 0, wages: 0, profit: 0, eventLoss: 0, revenue: 0, served: 0, wrong: 0, lost: 0, rejected: 0, spoiled: 0, spoiledCost: 0 };
-const EMPTY_BUILD = { size: null, dishId: null, toppings: [], rau: true, hanh: true, ot: true };
+const EMPTY_BUILD = { size: null, dishId: null, toppings: [], rau: true, hanh: true, ot: true, drink: null };
 
 const randomOrder = (menu) => {
   const dish = menu[Math.floor(Math.random() * menu.length)];
   const size = Math.random() < 0.4 ? 'lon' : 'nho';
   const n = Math.floor(Math.random() * (Math.min(3, dish.toppings.length) + 1));
   const toppings = [...dish.toppings].sort(() => Math.random() - 0.5).slice(0, n).sort();
-  return { dish, size, toppings, rau: Math.random() < 0.6, hanh: Math.random() < 0.6, ot: Math.random() < 0.5 };
+  const drink = Math.random() < 0.55 ? DRINKS[Math.floor(Math.random() * DRINKS.length)].id : null;
+  return { dish, size, toppings, rau: Math.random() < 0.6, hanh: Math.random() < 0.6, ot: Math.random() < 0.5, drink };
 };
 const toppingName = (id) => TOPPINGS.find(t => t.id === id).name;
 const sizeName = (dish, size) => dish.sizes[size === 'lon' ? 1 : 0];
 const modText = (o) => MODS.map(([k, label]) => `${o[k] ? 'có' : 'không'} ${label}`).join(', ');
 const orderText = (o) =>
-  `${o.dish.name} · ${sizeName(o.dish, o.size)}${o.toppings.length ? ' · ' + o.toppings.map(toppingName).join(', ') : ''} · ${modText(o)}`;
+  `${o.dish.name} · ${sizeName(o.dish, o.size)}${o.toppings.length ? ' · ' + o.toppings.map(toppingName).join(', ') : ''} · ${modText(o)} · ${o.drink ? drinkById(o.drink).name : 'không uống nước'}`;
 const orderPrice = (o) =>
-  o.dish.price + (o.size === 'lon' ? SIZE_EXTRA : 0) + o.toppings.reduce((sum, id) => sum + TOPPINGS.find(t => t.id === id).price, 0);
+  o.dish.price + (o.size === 'lon' ? SIZE_EXTRA : 0) + o.toppings.reduce((sum, id) => sum + TOPPINGS.find(t => t.id === id).price, 0) + (o.drink ? drinkById(o.drink).price : 0);
 
 // Liệt kê những chỗ bưng sai so với đơn khách gọi
 const mistakeText = (want, got) => {
@@ -118,6 +131,11 @@ const mistakeText = (want, got) => {
   MODS.forEach(([k, label]) => {
     if (want[k] !== got[k]) bad.push(want[k] ? `thiếu ${label}` : `dặn không ${label} mà vẫn cho ${label}`);
   });
+  if (want.drink !== got.drink) {
+    if (want.drink && got.drink) bad.push(`gọi ${drinkById(want.drink).name} mà bưng ${drinkById(got.drink).name}`);
+    else if (want.drink) bad.push(`thiếu ${drinkById(want.drink).name}`);
+    else bad.push(`không gọi nước mà tự ý bưng ${drinkById(got.drink).name}`);
+  }
   return bad;
 };
 
@@ -156,6 +174,7 @@ export default function App() {
   const [day, setDay] = useState(saved.day ?? 1);
   const [reputation, setReputation] = useState(saved.reputation ?? 50);
   const [menu, setMenu] = useState(() => mergeMenu(saved.stock));
+  const [drinkStock, setDrinkStock] = useState(() => ({ ...INITIAL_DRINK_STOCK, ...(saved.drinkStock ?? {}) }));
   const [customers, setCustomers] = useState([]);
   const [staff, setStaff] = useState(saved.staff ?? { waiter: false, chef: false });
   const [upgrades, setUpgrades] = useState(saved.upgrades ?? { decor: 0, marketing: 0 });
@@ -177,6 +196,7 @@ export default function App() {
   const moneyRef = useRef(money); moneyRef.current = money;
   const repRef = useRef(reputation); repRef.current = reputation;
   const menuRef = useRef(menu); menuRef.current = menu;
+  const drinkRef = useRef(drinkStock); drinkRef.current = drinkStock;
   const customersRef = useRef(customers); customersRef.current = customers;
 
   const nextCustomerId = useRef(1);
@@ -199,10 +219,10 @@ export default function App() {
     try {
       const stock = Object.fromEntries(menu.map(m => [m.id, m.stock]));
       localStorage.setItem(SAVE_KEY, JSON.stringify({
-        money, day, reputation, stock, staff, upgrades, weather, soundEnabled, logs, ratings, history,
+        money, day, reputation, stock, drinkStock, staff, upgrades, weather, soundEnabled, logs, ratings, history,
       }));
     } catch (e) {}
-  }, [money, day, reputation, menu, staff, upgrades, weather, soundEnabled, logs, ratings, history]);
+  }, [money, day, reputation, menu, drinkStock, staff, upgrades, weather, soundEnabled, logs, ratings, history]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -270,7 +290,7 @@ export default function App() {
       if (first) finishServe(first, first.order, true);
     }, 2500);
     return () => clearInterval(interval);
-  }, [staff.waiter, customers, menu, live, activeId]);
+  }, [staff.waiter, customers, menu, drinkStock, live, activeId]);
 
   useEffect(() => {
     if (!live) return;
@@ -308,6 +328,23 @@ export default function App() {
     }, 5000);
     return () => clearInterval(interval);
   }, [staff.chef, money]);
+
+  useEffect(() => {
+    if (!staff.chef) return;
+    const interval = setInterval(() => {
+      let budget = moneyRef.current;
+      DRINKS.forEach(d => {
+        if ((drinkRef.current[d.id] ?? 0) < 3 && budget >= d.cost * 5) {
+          budget -= d.cost * 5;
+          setMoney(m => m - d.cost * 5);
+          setDayStats(st => ({ ...st, purchases: st.purchases + d.cost * 5 }));
+          setDrinkStock(prev => ({ ...prev, [d.id]: (prev[d.id] ?? 0) + 5 }));
+          addLog(`👨‍🍳 Mệ Tôm tự nhập thêm 5 chai/ly ${d.name}`);
+        }
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [staff.chef]);
 
   const addRating = (n, c, customText) => {
     if (ratedIds.current.has(c.id)) return;
@@ -357,8 +394,11 @@ export default function App() {
   };
 
   const triggerEvent = () => {
-    const roll = Math.floor(Math.random() * 4);
     const theftAmt = Math.min(150000, Math.max(30000, Math.round(moneyRef.current * 0.08 / 1000) * 1000));
+    const breakAmt = 30000 + Math.floor(Math.random() * 5) * 10000;
+    const quyDish = menuRef.current[Math.floor(Math.random() * menuRef.current.length)];
+    const quyPrice = quyDish.price;
+    const complaint = ['Nước lèo hôm nay nhạt quá!', 'Chờ lâu quá, tô bún nguội hết rồi!', 'Sao trong tô có cọng tóc vậy?', 'Rau không tươi, hành thì héo!', 'Tính tiền sai rồi nha!'][Math.floor(Math.random() * 5)];
     const events = [
       {
         icon: '🥷', title: 'Có trộm!',
@@ -412,8 +452,64 @@ export default function App() {
           { label: 'Phục vụ như bình thường', run: () => { setReputation(v => Math.min(100, v + 1)); addLog('🎬 Reviewer ăn xong ra về (+1 Uy tín)'); } },
         ],
       },
+      {
+        icon: '🏃', title: 'Khách ăn xong bỏ đi không trả tiền!',
+        desc: `Một vị khách vừa ăn hết ${quyDish.name} rồi lẳng lặng đi mất, chưa trả ${vnd(quyPrice)}!`,
+        options: [
+          { label: 'Chạy theo đòi tiền (mất 8 giây, 60% đòi được)', run: () => {
+            setTimeLeft(t => Math.max(1, t - 8));
+            if (Math.random() < 0.6) {
+              setMoney(m => m + quyPrice);
+              setDayStats(st => ({ ...st, revenue: st.revenue + quyPrice }));
+              addFloatingText(`+${quyPrice.toLocaleString('vi-VN')}đ`, 'money');
+              addLog(`💰 Đòi được tiền ${quyDish.name}, khách xin lỗi rối rít (+${vnd(quyPrice)})`);
+            } else {
+              setReputation(v => Math.max(0, v - 1));
+              addLog(`😞 Đuổi không kịp, khách biến mất cùng ${vnd(quyPrice)} (-1 Uy tín vì bỏ quầy)`);
+            }
+          } },
+          { label: 'Kệ, coi như mời khách một bữa', run: () => {
+            addLog(`🤷 Bỏ qua vụ khách quỵt ${quyDish.name}, mất ${vnd(quyPrice)} tiền hàng`);
+          } },
+        ],
+      },
+      {
+        icon: '💥', title: 'Làm vỡ đồ!',
+        desc: `Ai đó va vào bàn, chồng tô đĩa rơi xuống vỡ hết. Đồ mới tốn ${vnd(breakAmt)}.`,
+        options: [
+          { label: 'Bắt đền khách (55% khách chịu đền, không thì -2 Uy tín)', run: () => {
+            if (Math.random() < 0.55) addLog(`🤝 Khách nhận lỗi và đền ${vnd(breakAmt)}, không mất đồng nào!`);
+            else { loseMoney(breakAmt); setReputation(v => Math.max(0, v - 2)); addLog(`😤 Khách cãi bướng, chủ quán vẫn phải chịu ${vnd(breakAmt)} (-2 Uy tín)`); }
+          } },
+          { label: `Tự chịu, mua đồ mới (-${vnd(breakAmt)})`, run: () => { loseMoney(breakAmt); addLog(`🧹 Quét dọn đồ vỡ, mua tô đĩa mới -${vnd(breakAmt)}`); } },
+        ],
+      },
+      {
+        icon: '😠', title: 'Khách phàn nàn',
+        desc: `Một vị khách cau mày: "${complaint}" và đòi gặp chủ quán.`,
+        options: [
+          { label: 'Xin lỗi và đổi tô mới (mất 1 phần, +2 Uy tín)', run: () => {
+            const pool = menuRef.current.filter(m => m.stock > 0);
+            if (pool.length === 0) { setReputation(v => Math.max(0, v - 1)); addLog('⚠️ Hết hàng nên không đổi được, khách bực bội bỏ đi (-1 Uy tín)'); return; }
+            const dish = pool[Math.floor(Math.random() * pool.length)];
+            setMenu(prev => prev.map(m => m.id === dish.id ? { ...m, stock: m.stock - 1 } : m));
+            setReputation(v => Math.min(100, v + 2));
+            addLog(`🙇 Xin lỗi và đổi ${dish.name} mới, khách nguôi giận (+2 Uy tín)`);
+          } },
+          { label: 'Giảm giá 20.000đ (+1 Uy tín)', run: () => {
+            if (moneyRef.current < 20000) { addLog('❌ Không đủ tiền giảm giá mạ ơi!'); return; }
+            loseMoney(20000);
+            setReputation(v => Math.min(100, v + 1));
+            addLog('🏷️ Giảm giá 20.000đ, khách gật đầu bỏ qua (+1 Uy tín)');
+          } },
+          { label: 'Giải thích, cãi lại (40% thông cảm, không thì -4 Uy tín)', run: () => {
+            if (Math.random() < 0.4) { setReputation(v => Math.min(100, v + 1)); addLog('💬 Khách nghe giải thích và thông cảm (+1 Uy tín)'); }
+            else { setReputation(v => Math.max(0, v - 4)); addLog('😤 Khách thấy chủ quán cãi lại, đăng bài chê khắp nơi! (-4 Uy tín)'); }
+          } },
+        ],
+      },
     ];
-    setEvent(events[roll]);
+    setEvent(events[Math.floor(Math.random() * events.length)]);
   };
 
   const resolveEvent = (opt) => { opt.run(); setEvent(null); };
@@ -471,7 +567,12 @@ export default function App() {
       addLog(`⚠️ Hết ${built.dish.name} rồi mạ ơi! Nhập thêm thôi.`);
       return;
     }
+    if (built.drink && (drinkStock[built.drink] ?? 0) <= 0) {
+      addLog(`⚠️ Hết ${drinkById(built.drink).name} rồi mạ ơi! Nhập thêm thôi.`);
+      return;
+    }
     setMenu(prev => prev.map(m => m.id === dish.id ? { ...m, stock: m.stock - 1 } : m));
+    if (built.drink) setDrinkStock(prev => ({ ...prev, [built.drink]: prev[built.drink] - 1 }));
     setCustomers(prev => prev.filter(x => x.id !== c.id));
     setActiveId(null);
     setBuild(EMPTY_BUILD);
@@ -499,7 +600,7 @@ export default function App() {
     const c = customers.find(x => x.id === activeId);
     if (!c || !build.size || !build.dishId) return;
     const dish = menu.find(m => m.id === build.dishId);
-    const built = { dish, size: build.size, toppings: [...build.toppings].sort(), rau: build.rau, hanh: build.hanh, ot: build.ot };
+    const built = { dish, size: build.size, toppings: [...build.toppings].sort(), rau: build.rau, hanh: build.hanh, ot: build.ot, drink: build.drink };
     const ok = mistakeText(c.order, built).length === 0;
     finishServe(c, built, ok);
   };
@@ -533,6 +634,21 @@ export default function App() {
     addLog(`📦 Đã nhập ${amount} phần ${dish.name} (-${totalCost.toLocaleString('vi-VN')}đ)`);
   };
 
+  const buyDrink = (id, amount = 5) => {
+    const d = drinkById(id);
+    if (!d) return;
+    const totalCost = d.cost * amount;
+    if (money < totalCost) {
+      addLog(`❌ Hết tiền rồi mạ ơi! Không đủ nhập ${amount} ${d.name}`);
+      return;
+    }
+    setMoney(m => m - totalCost);
+    setDayStats(st => ({ ...st, purchases: st.purchases + totalCost }));
+    setDrinkStock(prev => ({ ...prev, [id]: (prev[id] ?? 0) + amount }));
+    if (soundEnabled) playSound('cook');
+    addLog(`🥤 Đã nhập ${amount} ${d.name} (-${totalCost.toLocaleString('vi-VN')}đ)`);
+  };
+
   const buyUpgrade = (type) => {
     if (type === 'waiter' && !staff.waiter && money >= 300000) {
       setMoney(m => m - 300000);
@@ -556,10 +672,11 @@ export default function App() {
 
   const activeCustomer = customers.find(c => c.id === activeId);
   const step = !build.size ? 1 : !build.dishId ? 2 : 3;
-  const hints = ['Bước 1: chọn cỡ nhỏ hoặc lớn', 'Bước 2: chọn đúng món khách gọi', 'Bước 3: chọn topping, rau, hành, ớt đúng đơn rồi giao món'];
+  const hints = ['Bước 1: chọn cỡ nhỏ hoặc lớn', 'Bước 2: chọn đúng món khách gọi', 'Bước 3: chọn topping, rau, hành, ớt, nước uống đúng đơn rồi giao món'];
   const mmss = `${String(Math.floor(Math.max(0, timeLeft) / 60)).padStart(2, '0')}:${String(Math.max(0, timeLeft) % 60).padStart(2, '0')}`;
   const phaseLabel = { prep: 'Chuẩn bị', selling: 'Đang bán', summary: 'Tổng kết' }[phase];
   const avgRating = ratings.count ? (ratings.sum / ratings.count).toFixed(1) : '–';
+  const tile = (on) => `aspect-square w-full flex flex-col items-center justify-center gap-1 p-1.5 rounded-xl border text-center text-xs font-semibold leading-tight transition active:scale-95 ${on ? 'bg-purple-600 border-purple-400 text-white ring-2 ring-purple-300/60' : 'bg-slate-900 border-slate-600 text-slate-300 hover:bg-slate-700'}`;
   const chip = (on) => `px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${on ? 'bg-purple-600 border-purple-400 text-white' : 'bg-slate-900 border-slate-600 text-slate-300 hover:bg-slate-700'}`;
 
   return (
@@ -590,8 +707,8 @@ export default function App() {
               <Store className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="font-extrabold text-lg tracking-wide text-purple-300">HUẾ STREET FOOD TYCOON</h1>
-              <p className="text-xs text-slate-400">Bún Bò Huế • Đậm Đà Nước Lèo</p>
+              <h1 className="font-extrabold text-lg tracking-wide text-purple-300">BÚN BÒ HUẾ</h1>
+              <p className="text-xs text-slate-400">Quán Nước Lèo Đậm Đà</p>
             </div>
           </div>
 
@@ -694,9 +811,20 @@ export default function App() {
                   ))}
                 </div>
                 <p className="mt-4 text-xs font-bold text-emerald-200">Topping</p>
-                <div className="flex flex-wrap gap-2 mt-1">
+                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 mt-2">
                   {TOPPINGS.map(t => (
-                    <span key={t.id} className="text-xs border border-emerald-600 rounded-full px-2.5 py-0.5 text-emerald-100">{t.name} +{t.price / 1000}k</span>
+                    <div key={t.id} className="aspect-square flex flex-col items-center justify-center gap-0.5 border border-emerald-600 rounded-xl text-center text-xs text-emerald-100 p-1">
+                      <span className="text-xl">{t.emoji}</span>{t.name}<span className="opacity-80">+{t.price / 1000}k</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs text-emerald-300">Bánh mì chỉ ăn kèm Xáo Bò.</p>
+                <p className="mt-4 text-xs font-bold text-emerald-200">Nước uống</p>
+                <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 mt-2">
+                  {DRINKS.map(d => (
+                    <div key={d.id} className="aspect-square flex flex-col items-center justify-center gap-0.5 border border-emerald-600 rounded-xl text-center text-xs text-emerald-100 p-1">
+                      <span className="text-xl">{d.emoji}</span>{d.name}<span className="opacity-80">{d.price / 1000}k</span>
+                    </div>
                   ))}
                 </div>
                 <p className="text-center text-xs text-emerald-300 mt-4">Cỡ lớn +{SIZE_EXTRA / 1000}k · Rau, hành, ớt: có hoặc không, miễn phí · {DAY_LENGTH / 60} phút một ngày</p>
@@ -737,7 +865,7 @@ export default function App() {
                   ['Tiền thuê chỗ bán', dayStats.rent, -1],
                   ['Điện nước', dayStats.utilities, -1],
                   ['Lương nhân viên', dayStats.wages, -1],
-                  ['Thiệt hại (trộm/phạt)', dayStats.eventLoss, -1],
+                  ['Thiệt hại (trộm/phạt/đền vỡ)', dayStats.eventLoss, -1],
                 ].map(([label, val, sign]) => (
                   <div key={label} className="flex justify-between text-slate-300">
                     <span>{label}</span>
@@ -832,18 +960,23 @@ export default function App() {
                     </div>
                     <div>
                       <p className="text-xs font-bold text-slate-400 mb-2">Cỡ</p>
-                      <div className="flex gap-2">
-                        <button onClick={() => setBuild(b => ({ ...b, size: 'nho' }))} className={chip(build.size === 'nho')}>Cỡ nhỏ</button>
-                        <button onClick={() => setBuild(b => ({ ...b, size: 'lon' }))} className={chip(build.size === 'lon')}>Cỡ lớn +{SIZE_EXTRA / 1000}k</button>
+                      <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                        <button onClick={() => setBuild(b => ({ ...b, size: 'nho' }))} className={tile(build.size === 'nho')}>
+                          <span className="text-2xl">🥣</span>Cỡ nhỏ
+                        </button>
+                        <button onClick={() => setBuild(b => ({ ...b, size: 'lon' }))} className={tile(build.size === 'lon')}>
+                          <span className="text-2xl">🍲</span>Cỡ lớn<span className="opacity-80">+{SIZE_EXTRA / 1000}k</span>
+                        </button>
                       </div>
                     </div>
                     {build.size && (
                       <div>
                         <p className="text-xs font-bold text-slate-400 mb-2">Món</p>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                           {menu.map(m => (
-                            <button key={m.id} onClick={() => setBuild(b => ({ ...b, dishId: m.id, toppings: b.toppings.filter(t => m.toppings.includes(t)) }))} className={chip(build.dishId === m.id)}>
-                              {m.name}
+                            <button key={m.id} onClick={() => setBuild(b => ({ ...b, dishId: m.id, toppings: b.toppings.filter(t => m.toppings.includes(t)) }))} className={`${tile(build.dishId === m.id)} !justify-start overflow-hidden !p-0`}>
+                              <img src={m.img} alt={m.name} className="w-full h-3/5 object-cover" />
+                              <span className="px-1 pb-1 flex-1 flex items-center">{m.name}</span>
                             </button>
                           ))}
                         </div>
@@ -853,22 +986,37 @@ export default function App() {
                       <>
                         <div>
                           <p className="text-xs font-bold text-slate-400 mb-2">Topping</p>
-                          <div className="flex flex-wrap gap-2">
+                          <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                             {TOPPINGS.filter(t => menu.find(m => m.id === build.dishId).toppings.includes(t.id)).map(t => (
-                              <button key={t.id} onClick={() => toggleTopping(t.id)} className={chip(build.toppings.includes(t.id))}>
-                                {t.name} +{t.price / 1000}k
+                              <button key={t.id} onClick={() => toggleTopping(t.id)} className={tile(build.toppings.includes(t.id))}>
+                                <span className="text-2xl">{t.emoji}</span>{t.name}<span className="opacity-80">+{t.price / 1000}k</span>
                               </button>
                             ))}
                           </div>
                         </div>
                         <div>
                           <p className="text-xs font-bold text-slate-400 mb-2">Rau · Hành · Ớt</p>
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            {MODS.map(([k, label]) => (
-                              <div key={k} className="flex gap-1">
-                                <button onClick={() => setBuild(b => ({ ...b, [k]: true }))} className={chip(build[k])}>Có {label}</button>
-                                <button onClick={() => setBuild(b => ({ ...b, [k]: false }))} className={chip(!build[k])}>Không {label}</button>
-                              </div>
+                          <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                            {MODS.flatMap(([k, label]) => [
+                              <button key={k + '1'} onClick={() => setBuild(b => ({ ...b, [k]: true }))} className={tile(build[k])}>
+                                <span className="text-2xl">{MOD_EMOJI[k]}</span>Có {label}
+                              </button>,
+                              <button key={k + '0'} onClick={() => setBuild(b => ({ ...b, [k]: false }))} className={tile(!build[k])}>
+                                <span className="text-2xl opacity-50">🚫</span>Không {label}
+                              </button>,
+                            ])}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-slate-400 mb-2">Nước uống</p>
+                          <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                            <button onClick={() => setBuild(b => ({ ...b, drink: null }))} className={tile(build.drink === null)}>
+                              <span className="text-2xl opacity-50">🚫</span>Không nước
+                            </button>
+                            {DRINKS.map(d => (
+                              <button key={d.id} onClick={() => setBuild(b => ({ ...b, drink: d.id }))} className={tile(build.drink === d.id)}>
+                                <span className="text-2xl">{d.emoji}</span>{d.name}<span className="opacity-80">{d.price / 1000}k</span>
+                              </button>
                             ))}
                           </div>
                         </div>
@@ -920,6 +1068,24 @@ export default function App() {
                     </div>
                   ))}
                 </div>
+
+                <h4 className="font-bold text-sm mt-5 mb-3 text-slate-200">🥤 Nước uống</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {DRINKS.map(d => (
+                    <div key={d.id} className="bg-slate-900/80 border border-slate-700 rounded-xl p-3 text-center">
+                      <div className="text-3xl">{d.emoji}</div>
+                      <p className="font-bold text-sm text-slate-100 mt-1">{d.name}</p>
+                      <p className="text-xs text-purple-300 font-semibold">{d.price.toLocaleString('vi-VN')} đ</p>
+                      <p className={`text-xs font-bold mt-1 ${(drinkStock[d.id] ?? 0) > 3 ? 'text-emerald-400' : 'text-rose-400'}`}>Kho: {drinkStock[d.id] ?? 0}</p>
+                      <button
+                        onClick={() => buyDrink(d.id, 5)}
+                        className="w-full mt-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 text-xs py-1.5 rounded-lg font-medium transition flex items-center justify-center gap-1"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Nhập +5
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
 
             </div>
@@ -950,6 +1116,26 @@ export default function App() {
                         className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition"
                       >
                         Nhập 10 phần
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {DRINKS.map(d => (
+                  <div key={d.id} className="py-3 flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <span className="w-12 h-12 rounded-lg bg-slate-900 flex items-center justify-center text-2xl">{d.emoji}</span>
+                      <div>
+                        <p className="font-bold text-sm">{d.name}</p>
+                        <p className="text-xs text-slate-400">Giá vốn: {d.cost.toLocaleString('vi-VN')}đ / chai (nước không bị hỏng cuối ngày)</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <span className="text-sm font-semibold">Tồn kho: <strong className="text-purple-300">{drinkStock[d.id] ?? 0}</strong></span>
+                      <button
+                        onClick={() => buyDrink(d.id, 10)}
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition"
+                      >
+                        Nhập 10
                       </button>
                     </div>
                   </div>
@@ -1088,7 +1274,7 @@ export default function App() {
       </main>
 
       <footer className="bg-slate-950 border-t border-slate-800 py-4 text-center text-xs text-slate-500">
-        Huế Street Food Tycoon &copy; {new Date().getFullYear()} - Built with React & Tailwind CSS
+        Bún Bò Huế &copy; {new Date().getFullYear()} - Built with React & Tailwind CSS
       </footer>
     </div>
   );
