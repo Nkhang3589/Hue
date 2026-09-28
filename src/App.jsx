@@ -67,22 +67,19 @@ const CUSTOMER_AVATARS = [
   { name: 'Nhiếp ảnh gia Cố Đô', avatar: '📸', speed: 1.2 },
   { name: 'Food Reviewer Hà Nội', avatar: '📱', speed: 1.3 },
 ];
-const getSavedState = (key, defaultValue) => {
-  try {
-    const saved = localStorage.getItem(key);
-    return saved !== null ? JSON.parse(saved) : defaultValue;
-  } catch (e) {
-    return defaultValue;
-  }
-};
+
 export default function App() {
-// Thay đổi giá trị khởi tạo để đọc từ LocalStorage
-const [money, setMoney] = useState(() => getSavedState('hue_money', 500000));
-const [day, setDay] = useState(() => getSavedState('hue_day', 1));
-const [reputation, setReputation] = useState(() => getSavedState('hue_reputation', 50));
-const [menu, setMenu] = useState(() => getSavedState('hue_menu', INITIAL_MENU));
-const [staff, setStaff] = useState(() => getSavedState('hue_staff', { waiter: false, chef: false }));
-const [logs, setLogs] = useState(() => getSavedState('hue_logs', ['Mạ ơi! Chào mừng quý khách đến với Quầy Ẩm Thực Cố Đô Huế!']));
+  const [money, setMoney] = useState(500000);
+  const [day, setDay] = useState(1);
+  const [reputation, setReputation] = useState(50);
+  const [menu, setMenu] = useState(INITIAL_MENU);
+  const [customers, setCustomers] = useState([]);
+  const [staff, setStaff] = useState({ waiter: false, chef: false });
+  const [upgrades, setUpgrades] = useState({ decor: 0, marketing: 0 });
+  const [weather, setWeather] = useState('Nắng Nhẹ Sông Hương');
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [floatingTexts, setFloatingTexts] = useState([]);
+  const [logs, setLogs] = useState(['Mạ ơi! Chào mừng quý khách đến với Quầy Ẩm Thực Cố Đô Huế!']);
   const [activeTab, setActiveTab] = useState('counter');
 
   const nextCustomerId = useRef(1);
@@ -179,15 +176,7 @@ const [logs, setLogs] = useState(() => getSavedState('hue_logs', ['Mạ ơi! Ch�
     }, 5000);
     return () => clearInterval(interval);
   }, [staff.chef, money]);
-// Tự động lưu dữ liệu mỗi khi thông tin game thay đổi
-useEffect(() => {
-  localStorage.setItem('hue_money', JSON.stringify(money));
-  localStorage.setItem('hue_day', JSON.stringify(day));
-  localStorage.setItem('hue_reputation', JSON.stringify(reputation));
-  localStorage.setItem('hue_menu', JSON.stringify(menu));
-  localStorage.setItem('hue_staff', JSON.stringify(staff));
-  localStorage.setItem('hue_logs', JSON.stringify(logs));
-}, [money, day, reputation, menu, staff, logs]);
+
   const serveCustomer = (customerId, dish) => {
     if (dish.stock <= 0) {
       addLog(`⚠️ Hết ${dish.name} rồi mạ ơi! Nhập thêm thôi.`);
