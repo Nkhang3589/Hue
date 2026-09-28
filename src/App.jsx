@@ -68,18 +68,39 @@ const CUSTOMER_AVATARS = [
   { name: 'Food Reviewer Hà Nội', avatar: '📱', speed: 1.3 },
 ];
 
+const SAVE_KEY = 'hue-street-food-tycoon:save:v1';
+
+const loadSave = () => {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+};
+
+// Chỉ lưu tồn kho theo id, phần còn lại (giá, ảnh...) luôn lấy từ INITIAL_MENU
+const mergeMenu = (stockById) =>
+  INITIAL_MENU.map(item =>
+    stockById && typeof stockById[item.id] === 'number'
+      ? { ...item, stock: stockById[item.id] }
+      : item
+  );
+
 export default function App() {
-  const [money, setMoney] = useState(500000);
-  const [day, setDay] = useState(1);
-  const [reputation, setReputation] = useState(50);
-  const [menu, setMenu] = useState(INITIAL_MENU);
+  const [saved] = useState(loadSave);
+
+  const [money, setMoney] = useState(saved.money ?? 500000);
+  const [day, setDay] = useState(saved.day ?? 1);
+  const [reputation, setReputation] = useState(saved.reputation ?? 50);
+  const [menu, setMenu] = useState(() => mergeMenu(saved.stock));
   const [customers, setCustomers] = useState([]);
-  const [staff, setStaff] = useState({ waiter: false, chef: false });
-  const [upgrades, setUpgrades] = useState({ decor: 0, marketing: 0 });
-  const [weather, setWeather] = useState('Nắng Nhẹ Sông Hương');
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [staff, setStaff] = useState(saved.staff ?? { waiter: false, chef: false });
+  const [upgrades, setUpgrades] = useState(saved.upgrades ?? { decor: 0, marketing: 0 });
+  const [weather, setWeather] = useState(saved.weather ?? 'Nắng Nhẹ Sông Hương');
+  const [soundEnabled, setSoundEnabled] = useState(saved.soundEnabled ?? true);
   const [floatingTexts, setFloatingTexts] = useState([]);
-  const [logs, setLogs] = useState(['Mạ ơi! Chào mừng quý khách đến với Quầy Ẩm Thực Cố Đô Huế!']);
+  const [logs, setLogs] = useState(saved.logs ?? ['Mạ ơi! Chào mừng quý khách đến với Quầy Ẩm Thực Cố Đô Huế!']);
   const [activeTab, setActiveTab] = useState('counter');
 
   const nextCustomerId = useRef(1);
@@ -95,6 +116,15 @@ export default function App() {
       setFloatingTexts(prev => prev.filter(item => item.id !== id));
     }, 1200);
   };
+
+  useEffect(() => {
+    try {
+      const stock = Object.fromEntries(menu.map(m => [m.id, m.stock]));
+      localStorage.setItem(SAVE_KEY, JSON.stringify({
+        money, day, reputation, stock, staff, upgrades, weather, soundEnabled, logs,
+      }));
+    } catch (e) {}
+  }, [money, day, reputation, menu, staff, upgrades, weather, soundEnabled, logs]);
 
   useEffect(() => {
     const interval = setInterval(() => {
